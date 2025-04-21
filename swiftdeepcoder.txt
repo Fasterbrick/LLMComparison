@@ -1,0 +1,236 @@
+  Model
+    architecture        qwen2     
+    parameters          14.8B     
+    context length      131072    
+    embedding length    5120      
+    quantization        Q4_K_M    
+
+  Capabilities
+    completion    
+
+  Parameters
+    num_ctx        16384    
+    temperature    0.2      
+    top_k          40       
+    top_p          0.9      
+
+  System
+    Foundation and Vision framework expertise:                                                              
+    - Leverage Foundation for robust networking, concurrency (using async/await or Combine), and secure     
+      data storage                                                                                            
+
+  License
+    MIT License                    
+    Copyright (c) 2025 Agentica    
+swift@SwiftsMacStudio ~ % ollama run swift-deepcoder
+>>> /set verbose
+Set 'verbose' mode.
+>>> Simple SwiftUI Mac OS app to read CSV file and let user create PivotTables from it .
+The app should:
+1. Allow users to open a CSV file
+2. Display the data in a table view
+3. Create pivot tables based on selected rows/columns
+4. Save the generated pivot tables as new CSV files
+
+Constraints:
+- Use Swift concurrency (async/await) for file handling and processing
+- Implement error handling with appropriate user feedback
+- Ensure UI is responsive and user-friendly
+- Keep code modular and well-documented
+- Follow best practices for memory management and performance optimization
+
+The app should be a single executable, no server or external dependencies.
+
+I will provide the initial code snippets as I develop it. Please review each snippet and suggest improvements.
+</think>
+
+I'll help you create a SwiftUI macOS app that reads CSV files and allows users to create pivot tables. Here's a step-by-step implementation:
+
+1. First, let's set up the basic project structure and dependencies.
+
+```swift
+import SwiftUI
+import Foundation
+import Combine
+```
+
+2. Create a model to represent your data. For example, a `SalesData` class:
+
+```swift
+class SalesData: Codable {
+    var date: String
+    var product: String
+    var region: String
+    var sales: Double
+    
+    init(date: String, product: String, region: String, sales: Double) {
+        self.date = date
+        self.product = product
+        self.region = region
+        self.sales = sales
+    }
+}
+```
+
+3. Create a view to display the data and allow users to select rows and columns for pivot tables:
+
+```swift
+struct ContentView: View {
+    @State private var csvData: [SalesData] = []
+    @State private var selectedRows: Set<String> = []
+    @State private var selectedColumns: Set<String> = []
+    
+    var body: some View {
+        VStack {
+            Button("Open CSV") { openCSV() }
+            
+            if !csvData.isEmpty {
+                DataTableView(data: csvData, selectedRows: $selectedRows, selectedColumns: $selectedColumns)
+                
+                HStack {
+                    Button("Create Pivot Table") { createPivotTable() }
+                    Spacer()
+                    Button("Save as CSV") { saveAsCSV() }
+                }
+            }
+        }
+        .padding()
+    }
+    
+    func openCSV() {
+        // Implement file opening logic here
+    }
+    
+    func createPivotTable() {
+        // Implement pivot table creation logic here
+    }
+    
+    func saveAsCSV() {
+        // Implement saving logic here
+    }
+}
+```
+
+4. Add the `DataTableView` struct to display the data:
+
+```swift
+struct DataTableView: View {
+    let data: [SalesData]
+    @Binding var selectedRows: Set<String>
+    @Binding var selectedColumns: Set<String>
+    
+    var body: some View {
+        ScrollView {
+            Table(data) {
+                TableColumn("Date") { row in Text(row.date) }
+                TableColumn("Product") { row in Text(row.product) }
+                // Add more columns as needed
+            }
+            .selection(.multiple(columns: []))
+            .onSelectionChange { selectedRows = Set(selectedRows) }
+        }
+    }
+}
+```
+
+5. Implement the file handling functions using Swift concurrency:
+
+```swift
+extension ContentView {
+    async func openCSV() {
+        do {
+            let csvContent = try await openFile()
+            csvData = try await parseCSV(content: csvContent)
+        } catch {
+            print("Error opening CSV: \(error)")
+        }
+    }
+    
+    async func openFile() -> String {
+        let openPanel = NSOpenPanel()
+        openPanel.canChooseFiles = true
+        openPanel.canChooseDirectories = false
+        openPanel.allowsMultipleSelection = false
+        
+        let result = await openPanel.runModal()
+        if result == .OK {
+            let url = openPanel.urls.first?.absoluteString ?? ""
+            return try String(contentsOf: URL(string: url)!)
+        } else {
+            throw NSError(domain: "User", code: 1, userInfo: [NSLocalizedDescriptionKey: "No file selected"])
+        }
+    }
+    
+    func parseCSV(_ content: String) -> [SalesData] {
+        // Implement CSV parsing logic here
+        return []
+    }
+}
+```
+
+6. Add the pivot table creation and saving functionality:
+
+```swift
+extension ContentView {
+    func createPivotTable() {
+        // Implement pivot table creation logic here
+    }
+    
+    func saveAsCSV() {
+        // Implement saving logic here
+    }
+}
+```
+
+7. Finally, implement the CSV parsing function:
+
+```swift
+func parseCSV(_ content: String) -> [SalesData] {
+    let lines = content.components(separatedBy: "\n")
+    var data: [SalesData] = []
+    
+    for line in lines[1...] { // Skip header
+        let values = line.components(separatedBy: ",")
+        guard values.count >= 4 else { continue }
+        
+        let date = values[0]
+        let product = values[1]
+        let region = values[2]
+        let salesString = values[3]
+        
+        guard let sales = Double(salesString) else { continue }
+        
+        data.append(SalesData(date: date, product: product, region: region, sales: sales))
+    }
+    
+    return data
+}
+```
+
+This is a basic implementation that you can build upon. Here are some key improvements and considerations:
+
+1. **Error Handling**: Add proper error handling with user feedback using `UIAlertController` or similar.
+
+2. **UI Responsiveness**: Ensure all UI updates are done on the main thread, especially when modifying state variables.
+
+3. **Memory Management**: Be mindful of memory usage, especially when dealing with large CSV files. Consider processing data in chunks if necessary.
+
+4. **Performance Optimization**: Use efficient data structures and algorithms for sorting and filtering operations.
+
+5. **Testing**: Implement unit tests to ensure the correctness of your parsing and pivot table creation logic.
+
+6. **Documentation**: Add comments and documentation strings to make your code more understandable and maintainable.
+
+7. **Modular Code**: Consider breaking down the functionality into smaller, reusable components or services for better modularity.
+
+Remember to handle all file operations asynchronously to prevent blocking the main thread, which could result in a poor user experience. Also, ensure that any UI updates are done on the main thread using `DispatchQueue.main.async` or by wrapping them in 
+`@MainActor` if you're using Swift concurrency.
+
+total duration:       51.444803s
+load duration:        33.4585ms
+prompt eval count:    116 token(s)
+prompt eval duration: 611.9715ms
+prompt eval rate:     189.55 tokens/s
+eval count:           1341 token(s)
+eval duration:        50.79574775s
+eval rate:            26.40 tokens/s

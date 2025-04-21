@@ -1,0 +1,125 @@
+  Model
+    architecture        granite    
+    parameters          8.2B       
+    context length      131072     
+    embedding length    4096       
+    quantization        Q4_K_M     
+
+  Capabilities
+    completion    
+
+  Parameters
+    top_k          40       
+    top_p          0.9      
+    num_ctx        16384    
+    temperature    0.2      
+
+  System
+    Foundation and Vision framework expertise:                                                              
+    - Leverage Foundation for robust networking, concurrency (using async/await or Combine), and secure     
+      data storage                                                                                            
+
+  License
+    Apache License               
+    Version 2.0, January 2004    
+swift@SwiftsMacStudio ~ % ollama run swift-granite
+>>> /set verbose
+Set 'verbose' mode.
+>>> Simple SwiftUI Mac OS app to read CSV file and let user create PivotTables from it .
+
+1. Start by creating a new Xcode project with a macOS app template. Name it "PivotTableApp".
+
+2. Add the necessary dependencies for handling CSV files and data manipulation in your Package.swift:
+```
+dependencies: [
+    .package(url: "https://github.com/SwiftCSV/SwiftCSV.git", from: "0.9.0"),
+    // Other dependencies if needed
+]
+```
+
+3. Create a SwiftUI View for the main interface, which includes a file picker to select a CSV file and a button to trigger the PivotTable creation process.
+
+4. Implement the logic for reading the CSV file using SwiftCSV and creating a PivotTable based on user selection. For simplicity, let's assume we're only dealing with numerical data in this example.
+
+5. Display the PivotTable as a table view within the SwiftUI View.
+
+Here's a basic implementation to get you started:
+
+```swift
+import SwiftUI
+import Foundation
+import SwiftCSV
+
+struct ContentView: View {
+    @State private var csvData: Data?
+    @State private var pivotTable: [[Double]] = []
+
+    var body: some View {
+        VStack {
+            FilePicker(of: [.publicDirectories], selectionLimit: 1, allowedFileTypes: [.csv]) { result in
+                if let fileURL = result.files.first {
+                    do {
+                        csvData = try Data(contentsOf: URL(fileURLWithPath: fileURL.path))
+                        createPivotTable()
+                    } catch {
+                        print("Error reading CSV file: \(error)")
+                    }
+                }
+            }
+            Button("Create Pivot Table") {
+                createPivotTable()
+            }
+            if let data = csvData, !pivotTable.isEmpty {
+                ListView {
+                    ForEach(pivotTable, id: \.self) { row in
+                        Text("\(row[0])") // Assuming the first column is a header for demonstration purposes
+                    }
+                }
+                .frame(minWidth: 300, minHeight: 200)
+            }
+        }
+    }
+
+    func createPivotTable() {
+        guard let data = csvData else { return }
+
+        var records = [Record]()
+        do {
+            records = try Parser.parse(data: data, delimiter: ",")
+        } catch {
+            print("Error parsing CSV: \(error)")
+            return
+        }
+
+        // Implement PivotTable creation logic here using the records array
+        // For simplicity, let's just create a basic table with one column for demonstration purposes
+        pivotTable = records.map { $0.fields }
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: SomeView {
+        ContentView()
+    }
+}
+```
+
+This code sets up the basic structure of a SwiftUI macOS app that allows users to select a CSV file and create a simple PivotTable. The actual PivotTable creation logic is not implemented in this example, as it would require more complex data manipulation and 
+aggregation based on user selection criteria (e.g., row headers, column headers).
+
+To complete the implementation, you'll need to:
+1. Implement the PivotTable creation logic using the records array obtained from parsing the CSV file.
+2. Add support for user-defined selection criteria (row headers, column headers) to customize the PivotTable generation.
+3. Handle potential errors and edge cases during CSV reading and PivotTable creation.
+4. Improve the UI/UX as needed, such as adding input fields or dropdowns for users to specify their selection criteria.
+
+For a more advanced implementation, consider using a dedicated library like [PivotGrid](https://github.com/jakebecker/PivotGrid) or [SwiftCharts](https://github.com/SwiftCharts/SwiftCharts) to create interactive and visually appealing PivotTables.
+
+total duration:       19.547237458s
+load duration:        11.60525ms
+prompt eval count:    129 token(s)
+prompt eval duration: 445.922584ms
+prompt eval rate:     289.29 tokens/s
+eval count:           825 token(s)
+eval duration:        19.087072083s
+eval rate:            43.22 tokens/s
